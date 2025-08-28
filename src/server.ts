@@ -5,6 +5,7 @@ import v2Router from './routers/v2/index.router';
 import { genericErrorHandler } from './middlewares/error.middleware';
 import logger from './config/logger.config';
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
+import { connectToDB } from './config/db.config';
 
 
 
@@ -19,7 +20,8 @@ app.use('/api/v2', v2Router);
 
 app.use(genericErrorHandler);
 
-app.listen(serverConfig.PORT, () => {
+app.listen(serverConfig.PORT, async () => {
     console.log(`server is listening at  http://localhost:${serverConfig.PORT}`)
     logger.info("press Ctrl + C to stop the server", { "name": "dev-server" })
+    await connectToDB()
 });

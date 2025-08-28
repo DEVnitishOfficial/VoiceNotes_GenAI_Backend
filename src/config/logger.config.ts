@@ -24,6 +24,14 @@ const logger = winston.createLogger({
         maxFiles: '14d'
         }),
 
+        
+    ] 
+})
+
+export default logger;
+
+
+
        
 
         // TODO: add logic to integrate and save logs in mongodb
@@ -35,8 +43,3 @@ const logger = winston.createLogger({
         //     collection: 'log_entries',
         //     tryReconnect: true,
         //   })
-        
-    ] 
-})
-
-export default logger;
