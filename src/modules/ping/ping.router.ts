@@ -1,12 +1,12 @@
 
 
 import express from "express";
-import { pingHandler } from "./ping.controller";
 import { validatePing } from "./ping.validator";
+import { pingHandler } from "./ping.controller";
 
 const pingRouter = express.Router();
 
-pingRouter.post("/", validatePing, pingHandler); 
+pingRouter.post("/", validatePing, pingHandler);
 
 export default pingRouter;
 

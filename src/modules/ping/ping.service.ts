@@ -1,5 +1,4 @@
 
-
 export const getPingResponse = () => {
-  return { message: "pong" };
+    return { message: "pong" };
 };
