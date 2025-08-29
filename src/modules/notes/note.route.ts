@@ -12,7 +12,7 @@ noteRouter.get('/:id', NoteController.findNoteById);
 noteRouter.put('/:id', validateRequestBody(updateNoteSchema), NoteController.updateNote);
 noteRouter.delete('/:id', NoteController.removeNote);
 noteRouter.post('/transcribe', upload.single('audio'), NoteController.transcribeAudio);
-noteRouter.post('/:id/summary', NoteController.generateSummary);
+noteRouter.post('/summary/:id', NoteController.generateSummary);
 
 export default noteRouter;
 

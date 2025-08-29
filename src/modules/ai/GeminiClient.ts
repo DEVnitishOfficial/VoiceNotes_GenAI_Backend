@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { serverConfig } from "../../config";
 import { internalServerError } from "../../utils/errors/app.error";
+import fs from "fs";
 
 export class GeminiClient {
   private ai: GoogleGenAI;
@@ -16,16 +17,39 @@ export class GeminiClient {
     this.summaryModel = serverConfig.GEMINI_SUMMARY_MODEL;
   }
 
-  async transcribeFile(filePath: string, mimeType = "audio/mpeg/mp3/wav"): Promise<string> {
-    const uploaded = await this.ai.files.upload({
-      file: filePath,
-      config: { mimeType },
-    });
+  async transcribeFile(filePath: string, mimeType: string): Promise<string> {
+    console.log("calling from GeminiClient");
+    // const uploaded = await this.ai.files.upload({
+    //   file: filePath,
+    //   config: { mimeType },
+    // });
+    // console.log("File uploaded:", uploaded);
+
+    // read file into buffer
+    const fileBuffer = fs.readFileSync(filePath);
+
+    // encode as base64
+    const base64Audio = fileBuffer.toString("base64");
 
     const resp = await this.ai.models.generateContent({
       model: this.audioModel,
-      contents: [uploaded, "Transcribe the audio. Return only the text."],
+      contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            inlineData: {
+              mimeType,
+              data: base64Audio,
+            },
+          },
+          { text: "Transcribe this audio and return only text." },
+        ],
+      },
+    ],
     });
+
+    console.log("Transcription response:", resp);
 
     const text = (resp as any)?.text || (resp as any)?.outputText;
     if (!text) throw new internalServerError("Gemini transcription returned empty result");

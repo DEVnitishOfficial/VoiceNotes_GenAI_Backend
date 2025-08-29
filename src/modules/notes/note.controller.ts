@@ -2,15 +2,16 @@ import express, { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { NoteRepositoryImpl } from "./note.repository";
 import { NoteServiceImpl } from "./note.service";
-import { AIServiceFactory } from "../ai/AIServiceFactory";
-import { serverConfig } from "../../config";
+import { GeminiAIService } from "../ai/GeminiAIService";
+import { GeminiClient } from "../ai/GeminiClient";
+import path from "path/win32";
 
 const noteRepository = new NoteRepositoryImpl();
 const noteService = new NoteServiceImpl(noteRepository)
 
 
-const aiService = AIServiceFactory.create(serverConfig.AI_PROVIDER as "gemini" | "openai");
-
+const geminiClient = new GeminiClient();
+const geminiAiService = new GeminiAIService(geminiClient);
 export const NoteController = {
     async createNote(req: Request, res: Response, next: NextFunction): Promise<void> {
 
@@ -65,28 +66,48 @@ export const NoteController = {
             data: note
         });
     },
-     
+
     async transcribeAudio(req: Request & { file?: any }, res: Response, next: NextFunction): Promise<void> {
+        console.log('Transcribing audio file:', req.file);
         try {
-            if (!req.file){
+            if (!req.file) {
                 res.status(StatusCodes.BAD_REQUEST).json({
-                     success: false,
-                     message : "No audio file uploaded",
-                     data: null
+                    success: false,
+                    message: "No audio file uploaded",
+                    data: null
                 });
                 return;
             }
 
-            const transcript = await aiService.transcribe(req.file.path, req.file.mimetype);
+            // full path of uploaded file
+            const filePath = path.resolve(req.file.path);
+
+            // detect mimetype from multer
+            const mimeType = req.file.mimetype || "audio/wav";
+            console.log('File path:', filePath, 'MIME type:', mimeType);
+
+            const transcript = await geminiAiService.transcribe(filePath, mimeType);
+            console.log('Transcription result:', transcript);
+            if (!transcript) {
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    success: false,
+                    message: "Transcription failed",
+                    data: null
+                });
+                return;
+            }
 
             const created = await noteService.createNote({
                 title: req.body.title || "Voice Note",
                 transcript: transcript,
             });
 
+            // save the created note
+            await created.save();
+
             res.status(StatusCodes.CREATED).json({
-                success : true,
-                message : "Audio transcribed and note created successfully",
+                success: true,
+                message: "Audio transcribed and note created successfully",
                 data: created
             });
         } catch (err: any) {
@@ -97,6 +118,7 @@ export const NoteController = {
     async generateSummary(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const note = await noteService.findNoteById(req.params.id);
+            console.log("Note for summary:", note);
             if (!note) {
                 res.status(StatusCodes.NOT_FOUND).json({
                     success: "false",
@@ -106,11 +128,14 @@ export const NoteController = {
                 return;
             }
 
-            const summary = await aiService.summarize(note.transcript);
+            const summary = await geminiAiService.summarize(note.transcript);
+            note.summary = summary;
+            await note.save();
+
             res.status(StatusCodes.OK).json({
                 success: "true",
                 message: "Summary generated successfully",
-                data: summary
+                summary: summary
             });
         } catch (err: any) {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({

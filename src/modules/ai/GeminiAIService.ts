@@ -10,7 +10,8 @@ export class GeminiAIService implements IAIService {
     this.geminiClient = geminiClient;
   }
 
-  async transcribe(filePath: string, mimeType = "audio/mpeg/wav"): Promise<string> {
+  async transcribe(filePath: string, mimeType = "audio/wav"): Promise<string> {
+    console.log("calling from GeminiAIService");
     try {
       return await this.geminiClient.transcribeFile(filePath, mimeType);
     } finally {

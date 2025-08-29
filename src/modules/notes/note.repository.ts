@@ -60,7 +60,7 @@ export class NoteRepositoryImpl implements NoteRepository {
             throw new internalServerError("Failed to update note");
         }
 
-        return updatedNote;
+        return updatedNote.save();
     }
 
     async remove(id: string): Promise<NoteDocument | null> {
