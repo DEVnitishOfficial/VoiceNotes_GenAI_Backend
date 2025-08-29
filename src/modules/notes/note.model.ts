@@ -3,9 +3,11 @@ import { Schema, model, Document } from "mongoose";
 export interface NoteDocument extends Document {
     title: string;
     transcript: string;
-    summary?: string;
+    summary?: string | null;
+    audioUrl?: string | null;
     createdAt: Date;
     updatedAt: Date;
+    summaryGeneratedAt?: Date | null;
 }
 
 const noteSchema = new Schema<NoteDocument>(
@@ -25,6 +27,14 @@ const noteSchema = new Schema<NoteDocument>(
             type: String,
             default: null,
             trim: true,
+        },
+        audioUrl: {
+            type: String,
+            default: null,
+        },
+        summaryGeneratedAt: {
+            type: Date,
+            default: null,
         },
     },
     {
