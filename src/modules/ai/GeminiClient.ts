@@ -19,11 +19,6 @@ export class GeminiClient {
 
   async transcribeFile(filePath: string, mimeType: string): Promise<string> {
     console.log("calling from GeminiClient");
-    // const uploaded = await this.ai.files.upload({
-    //   file: filePath,
-    //   config: { mimeType },
-    // });
-    // console.log("File uploaded:", uploaded);
 
     // read file into buffer
     const fileBuffer = fs.readFileSync(filePath);
@@ -49,7 +44,6 @@ export class GeminiClient {
     ],
     });
 
-    console.log("Transcription response:", resp);
 
     const text = (resp as any)?.text || (resp as any)?.outputText;
     if (!text) throw new internalServerError("Gemini transcription returned empty result");

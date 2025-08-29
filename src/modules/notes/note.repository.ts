@@ -29,7 +29,6 @@ export class NoteRepositoryImpl implements NoteRepository {
     async findAll(): Promise<NoteDocument[]> {
         console.log("Finding all notes in repository");
         const allNote = await Note.find({});
-        console.log("All notes found:", allNote);
 
         if (!allNote) {
             logger.error("No notes found", { name: "NoteRepository" });

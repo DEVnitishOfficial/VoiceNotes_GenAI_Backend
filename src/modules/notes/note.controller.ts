@@ -68,7 +68,6 @@ export const NoteController = {
     },
 
     async transcribeAudio(req: Request & { file?: any }, res: Response, next: NextFunction): Promise<void> {
-        console.log('Transcribing audio file:', req.file);
         try {
             if (!req.file) {
                 res.status(StatusCodes.BAD_REQUEST).json({
@@ -84,10 +83,8 @@ export const NoteController = {
 
             // detect mimetype from multer
             const mimeType = req.file.mimetype || "audio/wav";
-            console.log('File path:', filePath, 'MIME type:', mimeType);
 
             const transcript = await geminiAiService.transcribe(filePath, mimeType);
-            console.log('Transcription result:', transcript);
             if (!transcript) {
                 res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                     success: false,
@@ -118,7 +115,6 @@ export const NoteController = {
     async generateSummary(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const note = await noteService.findNoteById(req.params.id);
-            console.log("Note for summary:", note);
             if (!note) {
                 res.status(StatusCodes.NOT_FOUND).json({
                     success: "false",
