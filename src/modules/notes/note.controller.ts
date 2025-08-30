@@ -5,6 +5,8 @@ import { NoteServiceImpl } from "./note.service";
 import { GeminiAIService } from "../ai/GeminiAIService";
 import { GeminiClient } from "../ai/GeminiClient";
 import path from "path/win32";
+import { convertWebMToWav } from "../../utils/helpers/audioConverter";
+import { FileStorageService } from "../ai/FileStorageService";
 
 const noteRepository = new NoteRepositoryImpl();
 const noteService = new NoteServiceImpl(noteRepository)
@@ -78,8 +80,15 @@ export const NoteController = {
                 return;
             }
 
-            // full path of uploaded file
-            const filePath = path.resolve(req.file.path);
+             // full path of uploaded file
+            let filePath = path.resolve(req.file.path);
+
+            // If uploaded file is webm → convert to wav
+            if (req.file.mimetype === "audio/webm") {
+                filePath = await convertWebMToWav(req.file.path);
+            }
+
+           
 
             // detect mimetype from multer
             const mimeType = req.file.mimetype || "audio/wav";
@@ -109,6 +118,10 @@ export const NoteController = {
             });
         } catch (err: any) {
             res.status(500).json({ error: err.message || "Transcription failed" });
+        }finally {
+            if (req.file?.path) {
+                FileStorageService.deleteFile(req.file.path);
+            }
         }
     },
 

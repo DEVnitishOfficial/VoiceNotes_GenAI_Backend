@@ -6,11 +6,18 @@ import { genericErrorHandler } from './middlewares/error.middleware';
 import logger from './config/logger.config';
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
 import { connectToDB } from './config/db.config';
+import cors from 'cors'
 
 
 
 const app = express();
 app.use(express.json());
+
+app.use(cors({
+  origin: "http://localhost:5173",  // frontend vite url
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}))
 
 
 app.use(attachCorrelationIdMiddleware)

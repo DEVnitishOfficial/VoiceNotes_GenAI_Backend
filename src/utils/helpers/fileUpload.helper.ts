@@ -1,31 +1,42 @@
-
 import path from "path";
 import multer, { FileFilterCallback } from "multer";
 import { Request } from "express";
+import { v4 as uuidv4 } from "uuid";
+
+// Map of allowed mimetypes to extensions
+const mimeToExt: Record<string, string> = {
+  "audio/webm": ".webm",
+  "audio/wav": ".wav",
+  "audio/mpeg": ".mp3",
+  "audio/mp3": ".mp3",
+  "video/mp4": ".mp4",
+};
 
 const storage = multer.diskStorage({
   destination: "uploads/",
   filename: (_req, file, cb) => {
-    cb(null, file.originalname); // preserve original filename
+    // Pick extension from mimetype map (fallback: use originalname extension)
+    const ext =
+      mimeToExt[file.mimetype] || path.extname(file.originalname).toLowerCase();
+    // Unique name: uuid + extension
+    cb(null, `${uuidv4()}${ext}`);
   },
 });
 
-const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
-  const ext = path.extname(file.originalname).toLowerCase();
-  const allowedExts = [".jpg", ".jpeg", ".webp", ".mp4", ".mp3", ".png", ".wav"];
-
-  if (!allowedExts.includes(ext)) {
-    cb(new Error(`Unsupported file type ${ext}`));
-    return;
+const fileFilter = (
+  _req: Request,
+  file: Express.Multer.File,
+  cb: FileFilterCallback
+) => {
+  if (!mimeToExt[file.mimetype]) {
+    return cb(new Error(`Unsupported file type: ${file.mimetype}`));
   }
-
   cb(null, true);
 };
 
 const upload = multer({
-  dest: "uploads/",
-  limits: { fileSize: 200 * 1024 * 1024 }, // 200 MB
   storage,
+  limits: { fileSize: 200 * 1024 * 1024 }, // 200 MB
   fileFilter,
 });
 
