@@ -7,6 +7,10 @@ import logger from './config/logger.config';
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
 import { connectToDB } from './config/db.config';
 import cors from 'cors'
+import path from 'path';
+
+// use process.cwd() instead of import.meta to get project root directory at runtime
+// const __dirname = process.cwd()
 
 
 
@@ -19,6 +23,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"]
 }))
 
+// app.use(express.static(path.join(__dirname,'client/dist')))
 
 app.use(attachCorrelationIdMiddleware)
 
